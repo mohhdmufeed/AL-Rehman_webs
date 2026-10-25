@@ -1,7 +1,9 @@
 {
-  "description": "Showcases welding services and products with portfolio, service details, and contact information for customers seeking professional welding solutions.",
+  "title": "AL-REHMAN Welding Works | Precision Fabrication & Metal Works",
+  "language": "en",
+  "description": "Expert welding and custom metal fabrication services for gates, grills, railings, steel staircases, roofing sheds, and structural metalwork.",
   "robots": {
-    "index": false
+    "index": true
   },
   "accessibility": {
     "addBypassLinks": false,
