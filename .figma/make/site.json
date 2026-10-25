@@ -1,0 +1,10 @@
+{
+  "description": "Showcases welding services and products with portfolio, service details, and contact information for customers seeking professional welding solutions.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
