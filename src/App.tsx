@@ -119,6 +119,10 @@ function silence(v: HTMLVideoElement | null) {
     v.defaultMuted = true
     v.muted = true
     v.volume = 0
+    const playPromise = v.play()
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {})
+    }
   }
 }
 
@@ -229,10 +233,12 @@ export default function App() {
           <video
             className="hero-video"
             ref={silence}
+            src="/welding-sparks.mp4"
             autoPlay
             muted
             loop
             playsInline
+            preload="auto"
             onVolumeChange={(e) => {
               e.currentTarget.muted = true
               e.currentTarget.volume = 0
@@ -387,10 +393,12 @@ export default function App() {
           <div className="about-image video-panel">
             <video
               ref={silence}
+              src="/logo-reveal.mp4"
               autoPlay
               muted
               loop
               playsInline
+              preload="auto"
               onVolumeChange={(e) => {
                 e.currentTarget.muted = true
                 e.currentTarget.volume = 0
