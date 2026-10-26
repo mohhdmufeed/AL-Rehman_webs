@@ -1,26 +1,382 @@
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
+
+// ============================================================================
+// REAL SERVICE PHOTO GALLERIES (EASILY ADD MORE PICTURES HERE)
+// To add more photos for Gates or any service, simply append a new item:
+// { id: "gate-6", title: "Your Gate Name", image: "https://...", specs: "...", description: "..." }
+// ============================================================================
+interface ServicePhoto {
+  id: string
+  title: string
+  service: string
+  image: string
+  specs: string
+  description: string
+}
+
+const serviceGalleries: Record<string, ServicePhoto[]> = {
+  Gates: [
+    {
+      id: "gate-laser-floral",
+      service: "Gates",
+      title: "Designer Laser-Cut Floral Compound Gate",
+      image: "/gate-modern-laser.png",
+      specs: "CNC Laser-Cut Floral Center • Triple Leaf Folding • Clean Light Grey Finish",
+      description:
+        "Modern 3-panel residential entrance gate fabricated with precision CNC laser-cut floral artwork and matching horizontal ventilation slats.",
+    },
+    {
+      id: "gate-compound-geo",
+      service: "Gates",
+      title: "Modern Architectural Compound Wall Gate",
+      image: "/gate-compound-geometric.jpg",
+      specs: "Geometric Diamond Mesh • Horizontal Louver Slats • Custom Box Section Handles",
+      description:
+        "Rigid compound perimeter entrance gate fabricated to exact pillar dimensions, featuring central diamond security lattice and square motif handles.",
+    },
+    {
+      id: "gate-sliding-track",
+      service: "Gates",
+      title: "Heavy-Duty Track-Mounted Sliding Compound Gate",
+      image: "/gate-sliding-track.jpg",
+      specs: "Heavy Gauge Mild Steel • Ground Roller Track • Horizontal Security Louvers",
+      description:
+        "Site-fitted sliding driveway gate engineered with reinforced bottom roller guides, high-load wheels, and heavy-duty protective enamel coating.",
+    },
+    {
+      id: "gate-forged-double",
+      service: "Gates",
+      title: "Handcrafted Forged Iron Double Main Gate",
+      image: "/gate-forged-iron.png",
+      specs: "Handcrafted Iron Filigree • Cast Flower Medallions • Heavy Security Latches",
+      description:
+        "Heavy double entrance swing gate fabricated in our workshop with forged ornamental scrollwork, floral motifs, and multi-point secure locking latch.",
+    },
+    {
+      id: "gate-steel-panel",
+      service: "Gates",
+      title: "Custom Steel Double-Leaf Security Door Gate",
+      image: "/gate-steel-panel.png",
+      specs: "Heavy Sheet Metal Panels • Embossed Medallions • Heavy-Duty Barrel Latches",
+      description:
+        "Full-privacy steel entry door fabricated with rigid steel framing, embossed rosette accents, and heavy-duty slide bolts for maximum home security.",
+    },
+    {
+      id: "gate-classic-iron",
+      service: "Gates",
+      title: "Classic Wrought Iron & Steel Compound Gate",
+      image: "/gates.png",
+      specs: "Handcrafted Iron Filigree • Matte Finish • Double Swing Hinges",
+      description:
+        "Custom manufactured to exact entrance dimensions with reinforced hinge points and high-durability protective topcoat.",
+    },
+  ],
+
+  Grills: [
+    {
+      id: "grill-wave-accent",
+      service: "Grills",
+      title: "Modern Wave Accent Window Safety Grill",
+      image: "/grill-modern-white-wave.png",
+      specs: "Solid Square Bar Steel • Curved Wave Accent • Durable Enamel Coating",
+      description:
+        "Contemporary residential window safety grill engineered with horizontal protective bars and an elegant curved vertical accent wave.",
+    },
+    {
+      id: "grill-triple-wave",
+      service: "Grills",
+      title: "Triple S-Wave Architectural Window Grill",
+      image: "/grill-triple-wave-window.png",
+      specs: "High-Security Solid Steel • S-Curve Vertical Bars • Flush Wall Anchors",
+      description:
+        "Wall-fitted window security grill fabricated with triple fluid wave patterns providing maximum burglar deterrence with high architectural curb appeal.",
+    },
+    {
+      id: "grill-sliding-patio",
+      service: "Grills",
+      title: "Triple-Panel Sliding Patio & French Door Security Grill",
+      image: "/grill-sliding-patio-wave.png",
+      specs: "Sliding Track System • Full Door Height • Integrated Top Transom Grills",
+      description:
+        "Complete multi-panel sliding security grill system engineered for balcony glass doors and large French window openings.",
+    },
+    {
+      id: "grill-veranda-arch",
+      service: "Grills",
+      title: "Veranda & Porch Arched Security Grill Enclosure",
+      image: "/grill-veranda-arch-enclosure.jpg",
+      specs: "Arched Header Steel • Built-In Swing Gate • Full Porch Perimeter Security",
+      description:
+        "Custom veranda enclosure with continuous vertical security bars, decorative arched upper profiles, and an integrated access security door.",
+    },
+    {
+      id: "grill-balcony-circle",
+      service: "Grills",
+      title: "Balcony & Terrace Geometric Ring Parapet Safety Grill",
+      image: "/grill-balcony-circle-parapet.jpg",
+      specs: "Circular Ring Motifs • Heavy Gauge Top & Bottom Frame • Parapet Anchoring",
+      description:
+        "Architectural exterior balcony safety grill combining vertical barrier bars with dual upper and lower decorative geometric ring borders.",
+    },
+    {
+      id: "grill-floral-rosette",
+      service: "Grills",
+      title: "Handcrafted Diamond & Floral Rosette Security Grill",
+      image: "/grill-diamond-floral-workshop.png",
+      specs: "Forged Floral Centerpiece • Diamond Lozenge Framing • Heavy Perimeter Welds",
+      description:
+        "Workshop-crafted ornamental steel safety grill featuring central forged flower clover medallion and diamond reinforcement bars.",
+    },
+    {
+      id: "grill-window-classic",
+      service: "Grills",
+      title: "Heavy-Duty Classic Box Section Window Security Grill",
+      image: "/grill-window-classic-bars.jpg",
+      specs: "Box Section Framework • Full Window Coverage • Clean Modern Finish",
+      description:
+        "Rigid steel window grill providing tamper-proof barrier protection for ground and upper-floor residential bedrooms.",
+    },
+  ],
+
+  "Railings & Staircases": [
+    {
+      id: "stair-anti-slip-perforated",
+      service: "Railings & Staircases",
+      title: "Exterior Anti-Slip Perforated Steel Entrance Staircase",
+      image: "/stair-anti-slip-perforated-steps.png",
+      specs: "Perforated Safety Grate Treads • Powder-Coated Steel Railing • Heavy Stringer Frame",
+      description:
+        "Durable exterior steel staircase fabricated with embossed slip-resistant perforated steel steps and rigid safety handrails for secure entry.",
+    },
+    {
+      id: "stair-industrial-structural",
+      service: "Railings & Staircases",
+      title: "Heavy-Duty Industrial Structural Steel Staircase",
+      image: "/stair-industrial-workshop-steel.png",
+      specs: "Heavy C-Channel Stringers • Flat Steel Plate Treads • Welded Vertical Tube Balustrade",
+      description:
+        "Engineered high-load factory and warehouse steel staircase fabricated in our workshop with solid steel treads and sturdy continuous handrails.",
+    },
+    {
+      id: "railing-stainless-tension-cable",
+      service: "Railings & Staircases",
+      title: "Stainless Steel Handrail with Horizontal Safety Bars",
+      image: "/railing-stainless-steel-cable-bar.png",
+      specs: "Grade 304 Stainless Steel • Cylindrical Top Rail • Multi-Tier Safety Run • Flange Base Mounts",
+      description:
+        "Sleek contemporary stainless steel balustrade with brushed cylindrical handrail, heavy base anchors, and horizontal safety runner bars for internal and external stairs.",
+    },
+    {
+      id: "railing-geometric-box-tube",
+      service: "Railings & Staircases",
+      title: "Modern Geometric Box-Section Steel Stair Handrail",
+      image: "/railing-geometric-box-tube-steel.png",
+      specs: "Square Hollow Section Steel • Alternating Rectangular Motifs • Clean Mitered Welds",
+      description:
+        "Architectural modern stair railing with custom alternating rectangular box balusters, precision mitered corner joints, and clean primed steel finish.",
+    },
+    {
+      id: "railing-modern-geometric-stainless",
+      service: "Railings & Staircases",
+      title: "Minimalist Geometric Stainless Steel Stair Balustrade",
+      image: "/railing-modern-geometric-stainless-stair.png",
+      specs: "Architectural Stainless Steel • Interlocking Angled Geometry • Precision Welded & Polished",
+      description:
+        "High-end modern staircase railing featuring bespoke angled geometric chevron lines, custom-fitted to the staircase pitch with immaculate brushed finish.",
+    },
+    {
+      id: "stair-rooftop-terrace",
+      service: "Railings & Staircases",
+      title: "Outdoor Rooftop Terrace Steel Staircase with Geometric Railing",
+      image: "/stair-rooftop-terrace-geometric.png",
+      specs: "Outdoor Primed Steel • Open Tread Risers • Geometric Balustrade Lines",
+      description:
+        "Custom rooftop access steel staircase fabricated with rigid square tubular stringers, open anti-sag steps, and modern multi-angle balustrades.",
+    },
+    {
+      id: "railing-stainless-ornamental-pillar",
+      service: "Railings & Staircases",
+      title: "Luxury Stainless Steel Stair Railing with Carved Wooden Master Pillar",
+      image: "/railing-stainless-ornamental-pillar-granite.png",
+      specs: "SS 304 Mirror Polish • Teak Finish Wood Newel • Amber Crystal Ball Finial • Geometric Infill",
+      description:
+        "Premium indoor staircase railing featuring mirror-finish stainless steel tubes, decorative wooden master post with crystal globe finial, and bespoke geometric riser panels.",
+    },
+    {
+      id: "railing-stainless-wood-pillar",
+      service: "Railings & Staircases",
+      title: "Stainless Steel & Hardwood Combination Staircase Handrail",
+      image: "/railing-stainless-wood-pillar-red.png",
+      specs: "Dual Finish SS 304 & Wood • Multi-Tier Safety Runners • Heavy Floor Core Drilling",
+      description:
+        "Contemporary combination balustrade with rich polished wood accent posts, stainless steel round handrail, and four horizontal protection bars.",
+    },
+    {
+      id: "stair-industrial-yellow",
+      service: "Railings & Staircases",
+      title: "Industrial High-Visibility Steel Safety Access Staircase",
+      image: "/stair-industrial-yellow-safety.png",
+      specs: "Safety Yellow Epoxy Finish • Continuous Dual Handrails • Gusseted Base Brackets",
+      description:
+        "Factory and mezzanine steel access staircase engineered with continuous safety rails, non-slip tread plates, and durable high-visibility yellow powder coating.",
+    },
+  ],
+
+  "Sheds & Roofing": [
+    {
+      id: "shed-truss-gabled",
+      service: "Sheds & Roofing",
+      title: "Large-Span Gabled Steel Roof Truss Framework",
+      image: "/shed-truss-gabled-framework.png",
+      specs: "Engineered Tubular Rafters • Purlin Grid System • Ridge Beam Apex • Anti-Sag Rods",
+      description:
+        "Precision manufactured wide-span structural gabled roof framework designed for optimal rain shedding, high wind resistance, and durable sheet cladding.",
+    },
+    {
+      id: "shed-terrace-canopy",
+      service: "Sheds & Roofing",
+      title: "Modern Terrace Rooftop Canopy & Steel Pergola Frame",
+      image: "/shed-terrace-canopy-pergola.png",
+      specs: "Heavy Hollow Section Columns • Slatted Rafter Joists • Wall Anchored • Weatherproof Finish",
+      description:
+        "Custom architectural steel terrace awning and pergola structure fabricated to transform open rooftops into shaded, weather-protected living spaces.",
+    },
+    {
+      id: "shed-rooftop-welding",
+      service: "Sheds & Roofing",
+      title: "On-Site Precision Hip & Pyramid Roof Truss Welding",
+      image: "/shed-rooftop-welding-apex.png",
+      specs: "Full Penetration Arc Welds • Custom Angular Hip Rafters • Reinforced Gusset Plates",
+      description:
+        "On-site roof fabrication and precision apex welding by our certified welders, ensuring rock-solid structural integrity for rooftop additions.",
+    },
+    {
+      id: "shed-industrial-warehouse",
+      service: "Sheds & Roofing",
+      title: "Pre-Engineered Industrial Warehouse Shed & Wall Cladding",
+      image: "/shed-industrial-warehouse-interior.png",
+      specs: "Heavy Structural Steel Trusses • Galvalume Roofing • Corrugated Wall Panels • Double Access Doors",
+      description:
+        "Turnkey commercial steel shed construction featuring welded roof trusses, purlins, and full metal sheet cladding for industrial workshops and storage.",
+    },
+  ],
+
+  "Structural Steel": [
+    {
+      id: "struct-equipment-stand",
+      service: "Structural Steel",
+      title: "Heavy-Duty Welded Box-Section Industrial Equipment Stand",
+      image: "/struct-heavy-duty-equipment-stand.png",
+      specs: "Square Hollow Section Steel • Gusseted Mounting Pads • Base Floor Runners • Matte Black Epoxy",
+      description:
+        "Rigid custom structural equipment stand fabricated with heavy-gauge tubular steel and machined mounting plates to securely support machinery and power systems.",
+    },
+    {
+      id: "struct-stainless-chassis",
+      service: "Structural Steel",
+      title: "Industrial Stainless Steel Machine Chassis & Skid Frame",
+      image: "/struct-stainless-machine-base-frame.png",
+      specs: "SS 304 Box Section • Leveling Foot Pads • Precision TIG Welded • Heavy Machine Mounting",
+      description:
+        "Corrosion-resistant structural stainless steel foundation skid built for food processing, pharmaceutical, and high-spec industrial manufacturing equipment.",
+    },
+    {
+      id: "struct-bevel-weld",
+      service: "Structural Steel",
+      title: "High-Strength Bevel-Groove Full Penetration Joint Welding",
+      image: "/struct-bevel-groove-weld-joint.png",
+      specs: "RD-260 E6013 Low Carbon Rod • Beveled Plate Prep • Full Root Penetration • Certified Joint",
+      description:
+        "Precision edge beveling and high-tensile arc welding for load-bearing structural joints, ensuring crack-free strength under extreme compression and shear loads.",
+    },
+    {
+      id: "struct-wire-mesh-rolls",
+      service: "Structural Steel",
+      title: "Heavy-Gauge Galvanized Welded Wire Mesh Rolls",
+      image: "/struct-galvanized-wire-mesh-rolls.png",
+      specs: "Hot-Dip Galvanized Wire • Electric Resistance Welded Grid • Rustproof • Bulk Yard Supply",
+      description:
+        "High-durability galvanized steel mesh rolls fabricated for industrial security enclosures, safety partitions, animal fencing, and concrete slab reinforcement.",
+    },
+    {
+      id: "struct-wire-mesh-panel",
+      service: "Structural Steel",
+      title: "Rigid Galvanized Steel Safety Fencing Mesh",
+      image: "/struct-welded-wire-mesh-roll.png",
+      specs: "Square Grid Pattern • Anti-Corrosion Zinc Coating • Rigid Vertical Alignment • High Tensile",
+      description:
+        "Uniform welded wire mesh engineered for boundary security fences, machine safety guards, window screening, and construction site perimeters.",
+    },
+  ],
+
+  "Welding & Repairs": [
+    {
+      id: "weld-workshop-fabrication",
+      service: "Welding & Repairs",
+      title: "Precision Workshop Arc & Metal Frame Welding",
+      image: "/weld-workshop-fabrication-sparks.png",
+      specs: "Certified Manual Metal Arc / MIG • Argon Shielded • Deep Root Penetration • Slag Free",
+      description:
+        "Expert workshop welding and steel fabrication by master fabricators, delivering high-integrity joints for gates, structural frames, and machinery components.",
+    },
+    {
+      id: "weld-arc400-inverter",
+      service: "Welding & Repairs",
+      title: "Industrial 400A Heavy-Duty IGBT Inverter Arc Welder",
+      image: "/weld-arc400-industrial-inverter.png",
+      specs: "ARC400 IGBT Technology • Digital Current Display • High Duty Cycle • Thick Gauge Welding",
+      description:
+        "Commercial-grade heavy-amperage welding power source utilized for deep weld penetration on thick structural steel, iron gates, and heavy machinery repairs.",
+    },
+    {
+      id: "weld-grinder-finishing",
+      service: "Welding & Repairs",
+      title: "Heavy-Duty Angle Grinder & Weld Seam Finishing Tool",
+      image: "/weld-grinder-metal-fabrication-tool.png",
+      specs: "High-Speed Angle Grinder • Cut-Off Discs • Flap Wheel Polishing • Flush Weld Dressing",
+      description:
+        "Industrial grinding and metal prep equipment used for beveling joints, cutting structural profiles, and polishing weld beads to a smooth, paint-ready surface.",
+    },
+  ],
+}
+
+// Flat list of all photos for the "All" view in gallery slider
+const allGalleryPhotos: ServicePhoto[] = Object.values(serviceGalleries).flat()
 
 const services = [
   {
     number: "01",
-    image: "/gates.png",
-    title: "Gates & Grills",
-    text: "Gates and grills for homes, shops and compounds. Made to your measurements in styles you choose.",
+    key: "Gates",
+    title: "Gates & Compound Entrances",
+    text: "Custom sliding, swing and perimeter compound gates. Handcrafted to your measurements with heavy-duty durability.",
     items: [
-      "Main gate fabrication",
-      "Custom steel gates",
-      "Iron gate fabrication",
-      "Sliding gates",
-      "Window grill fabrication",
-      "Security grills",
+      "Main entrance gate fabrication",
+      "Custom steel sliding gates",
+      "Wrought iron gate fabrication",
+      "Modern laser-cut design gates",
+      "Double swing compound gates",
+      "Heavy-duty panel door gates",
       "Gate repair and welding",
     ],
   },
-
   {
     number: "02",
-    image: "/railings.png",
-    position: "center 62%",
+    key: "Grills",
+    title: "Window & Safety Grills",
+    text: "High-security window grills, veranda enclosures, balcony barriers, and sliding door security grills engineered for lasting protection.",
+    items: [
+      "Modern window grill fabrication",
+      "Architectural wave & S-curve grills",
+      "Balcony & parapet safety grills",
+      "Veranda security enclosures",
+      "Sliding patio door grills",
+      "Handcrafted ornamental grills",
+      "Window grill repair and repainting",
+    ],
+  },
+  {
+    number: "03",
+    key: "Railings & Staircases",
     title: "Railings & Staircases",
     text: "Steel staircases and railings for homes and buildings. Built to fit your space and finished to match.",
     items: [
@@ -32,10 +388,9 @@ const services = [
       "Railing repair",
     ],
   },
-
   {
-    number: "03",
-    image: "/shed.png",
+    number: "04",
+    key: "Sheds & Roofing",
     title: "Sheds & Roofing",
     text: "Steel sheds and roof structures for homes and businesses. Planned around your space and how you use it.",
     items: [
@@ -49,11 +404,9 @@ const services = [
       "Shed repair",
     ],
   },
-
   {
-    number: "04",
-    image:
-      "https://images.unsplash.com/photo-1627922529156-41f27fb6f7ac?auto=format&fit=crop&w=1000&h=620&q=80",
+    number: "05",
+    key: "Structural Steel",
     title: "Structural Steel",
     text: "Steel frames, trusses and supports made to your drawings. Also custom metal components and structure repairs.",
     items: [
@@ -66,11 +419,9 @@ const services = [
       "Steel structure repair",
     ],
   },
-
   {
-    number: "05",
-    image:
-      "https://images.unsplash.com/photo-1466779561253-0a08336ba2ab?auto=format&fit=crop&w=1000&h=620&q=80",
+    number: "06",
+    key: "Welding & Repairs",
     title: "Welding & Repairs",
     text: "Repair and new-build welding, in the workshop or on site. Send a photo or measurements to get a quote.",
     items: [
@@ -85,32 +436,6 @@ const services = [
       "On-site welding",
       "Workshop welding services",
     ],
-  },
-]
-
-const projects = [
-  {
-    title: "Custom Steel Gates",
-    type: "GATES & GRILLS",
-    service: "Gates & Grills",
-    image:
-      "https://images.unsplash.com/photo-1696521938054-399082dd4f8c?auto=format&fit=crop&w=1400&q=80",
-  },
-
-  {
-    title: "Staircase Railings",
-    type: "RAILINGS & STAIRCASES",
-    service: "Railings & Staircases",
-    image:
-      "https://images.unsplash.com/photo-1612311408242-3ad94a8832cd?auto=format&fit=crop&w=1000&q=80",
-  },
-
-  {
-    title: "Steel Frame Structures",
-    type: "STRUCTURAL STEEL",
-    service: "Structural Steel",
-    image:
-      "https://images.unsplash.com/photo-1584099667019-c7fbb1f55664?auto=format&fit=crop&w=1000&q=80",
   },
 ]
 
@@ -143,28 +468,98 @@ function Mark() {
 
 export default function App() {
   const [sent, setSent] = useState(false)
-
   const [menu, setMenu] = useState(false)
-
   const [service, setService] = useState("")
-
   const [details, setDetails] = useState("")
+
+  // Mini-sliders state for each service card in #services
+  const [cardIndices, setCardIndices] = useState<Record<string, number>>({
+    Gates: 0,
+    Grills: 0,
+    "Railings & Staircases": 0,
+    "Sheds & Roofing": 0,
+    "Structural Steel": 0,
+    "Welding & Repairs": 0,
+  })
+
+  function nextCardPhoto(key: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    const photos = serviceGalleries[key] || []
+    if (photos.length <= 1) return
+    setCardIndices((prev) => ({
+      ...prev,
+      [key]: ((prev[key] || 0) + 1) % photos.length,
+    }))
+  }
+
+  function prevCardPhoto(key: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    const photos = serviceGalleries[key] || []
+    if (photos.length <= 1) return
+    setCardIndices((prev) => ({
+      ...prev,
+      [key]: ((prev[key] || 0) - 1 + photos.length) % photos.length,
+    }))
+  }
+
+  // Dedicated Gallery Slider State
+  const [activeCategory, setActiveCategory] = useState<string>("Gates")
+  const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0)
+  const [autoPlay, setAutoPlay] = useState<boolean>(true)
+
+  // Current photos for selected category
+  const currentPhotos =
+    activeCategory === "All"
+      ? allGalleryPhotos
+      : serviceGalleries[activeCategory] || []
+
+  // Ensure index is within range
+  const safeSlideIndex =
+    currentPhotos.length > 0 ? activeSlideIndex % currentPhotos.length : 0
+  const currentSlide = currentPhotos[safeSlideIndex] || currentPhotos[0]
+
+  // Auto-play timer for slider
+  useEffect(() => {
+    if (!autoPlay || currentPhotos.length <= 1) return
+    const timer = setInterval(() => {
+      setActiveSlideIndex((prev) => (prev + 1) % currentPhotos.length)
+    }, 4500)
+    return () => clearInterval(timer)
+  }, [autoPlay, currentPhotos.length])
+
+  function nextSlide() {
+    setActiveSlideIndex((prev) => (prev + 1) % currentPhotos.length)
+  }
+
+  function prevSlide() {
+    setActiveSlideIndex(
+      (prev) => (prev - 1 + currentPhotos.length) % currentPhotos.length,
+    )
+  }
+
+  function switchCategory(cat: string) {
+    setActiveCategory(cat)
+    setActiveSlideIndex(0)
+  }
+
+  function jumpToGallery(cat: string) {
+    switchCategory(cat)
+    const el = document.getElementById("gallery")
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" })
+    }
+  }
 
   function pick(serviceTitle: string, detail = "") {
     setService(serviceTitle)
-
     setDetails(detail ? `I need: ${detail}` : "")
-
     setSent(false)
-
     setMenu(false)
   }
 
   function submitQuote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
     const data = new FormData(event.currentTarget)
-
     const message = `Hello, I would like a quote.\n\nName: ${data.get("name")}\nPhone: ${data.get("phone")}\nService: ${data.get("service")}\nJob size: ${data.get("size")}\nDetails: ${data.get("details") || "Not provided"}`
 
     window.open(
@@ -174,11 +569,8 @@ export default function App() {
     )
 
     setSent(true)
-
     event.currentTarget.reset()
-
     setService("")
-
     setDetails("")
   }
 
@@ -193,12 +585,13 @@ export default function App() {
         >
           <Mark />
         </a>
+
         <nav aria-label="Primary navigation" className={menu ? "open" : ""}>
           <a href="#services" onClick={() => setMenu(false)}>
             Services
           </a>
-          <a href="#work" onClick={() => setMenu(false)}>
-            Our work
+          <a href="#gallery" onClick={() => setMenu(false)}>
+            Photo Gallery
           </a>
           <a href="#about" onClick={() => setMenu(false)}>
             About
@@ -210,10 +603,12 @@ export default function App() {
             Call +91 99725 22213
           </a>
         </nav>
+
         <div className="nav-right">
           <a className="nav-cta" href="#quote" onClick={() => pick("")}>
             Get a quote <span>↗</span>
           </a>
+
           <button
             type="button"
             className="burger"
@@ -259,7 +654,7 @@ export default function App() {
             </h1>
             <p className="intro">
               Lasting solutions. Expert welding and metal fabrication for homes,
-              shops, compounds and businesses—made to your measurements.
+              shops, compounds and businesses—made to your exact measurements.
             </p>
             <div className="hero-actions">
               <a
@@ -271,11 +666,9 @@ export default function App() {
               </a>
               <a
                 className="button secondary"
-                href="https://wa.me/919972522213?text=Hello%2C%20I%20would%20like%20a%20quote."
-                target="_blank"
-                rel="noreferrer"
+                href="#gallery"
               >
-                <WaIcon /> WhatsApp <span>↗</span>
+                Browse Designs <span>↓</span>
               </a>
             </div>
           </div>
@@ -286,12 +679,15 @@ export default function App() {
           <div>
             <a href="#services">PRECISION</a>
             <i />
-            <a href="#work">STRENGTH</a>
+            <a href="#gallery">INNOVATION</a>
             <i />
-            <a href="#about">RELIABILITY</a>
+            <a href="#about">STRENGTH</a>
+            <i />
+            <a href="#quote">RELIABILITY</a>
           </div>
         </section>
 
+        {/* SERVICES SECTION WITH INTERACTIVE SLIDER CONTROLS ON CARDS */}
         <section className="services" id="services">
           <div className="section-head">
             <div>
@@ -305,90 +701,263 @@ export default function App() {
               </h2>
             </div>
             <p>
-              From a single custom gate to full-scale structural fabrication, we
-              bring the same discipline, accuracy and pride to every weld.
+              From custom sliding gates and security grills to full-scale structural steel fabrication, we
+              bring master craftsmanship and precision to every weld.
             </p>
           </div>
-          <div className="service-grid complete">
-            {services.map((service) => (
-              <article className="service-card" key={service.number}>
-                <div className="service-photo">
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    style={
-                      service.position
-                        ? { objectPosition: service.position }
-                        : undefined
-                    }
-                    loading="lazy"
-                  />
-                </div>
-                <h3>{service.title}</h3>
-                <p>{service.text}</p>
-                <ul>
-                  {service.items.map((item) => (
-                    <li key={item}>
-                      <a
-                        href="#quote"
-                        onClick={() => pick(service.title, item)}
-                      >
-                        {item}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  className="card-link"
-                  href="#quote"
-                  onClick={() => pick(service.title)}
-                  aria-label={`Request ${service.title}`}
-                >
-                  Discuss your project <span>↗</span>
-                </a>
-              </article>
-            ))}
+
+          <div className="service-grid">
+            {services.map((srv) => {
+              const gallery = serviceGalleries[srv.key] || []
+              const currentIndex = cardIndices[srv.key] || 0
+              const activePhoto = gallery[currentIndex] || {
+                image: "/gates.png",
+                title: srv.title,
+              }
+
+              return (
+                <article className="service-card" key={srv.number}>
+                  {/* Photo area with mini-slider arrows and counter */}
+                  <div className="service-photo-wrap">
+                    <img
+                      src={activePhoto.image}
+                      alt={activePhoto.title || srv.title}
+                      loading="lazy"
+                    />
+
+                    <div className="card-slide-bar">
+                      <div className="card-slide-top">
+                        <span className="card-slide-count">
+                          {currentIndex + 1} / {gallery.length} Photos
+                        </span>
+                        <div className="card-slide-dots">
+                          {gallery.map((_, dotIdx) => (
+                            <button
+                              key={dotIdx}
+                              type="button"
+                              className={`card-dot-btn ${dotIdx === currentIndex ? "active" : ""}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setCardIndices((prev) => ({
+                                  ...prev,
+                                  [srv.key]: dotIdx,
+                                }))
+                              }}
+                              aria-label={`Go to slide ${dotIdx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {gallery.length > 1 && (
+                        <div className="card-slide-nav">
+                          <button
+                            type="button"
+                            className="card-arrow-btn"
+                            onClick={(e) => prevCardPhoto(srv.key, e)}
+                            aria-label={`Previous ${srv.title} photo`}
+                            title="Previous image"
+                          >
+                            ‹
+                          </button>
+                          <button
+                            type="button"
+                            className="card-arrow-btn"
+                            onClick={(e) => nextCardPhoto(srv.key, e)}
+                            aria-label={`Next ${srv.title} photo`}
+                            title="Next image"
+                          >
+                            ›
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <h3>{srv.title}</h3>
+                  <p>{srv.text}</p>
+
+                  <ul>
+                    {srv.items.map((item) => (
+                      <li key={item}>
+                        <a
+                          href="#quote"
+                          onClick={() => pick(srv.title, item)}
+                        >
+                          {item}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="service-card-footer">
+                    <a
+                      className="card-link"
+                      href="#quote"
+                      onClick={() => pick(srv.title)}
+                      aria-label={`Request ${srv.title}`}
+                    >
+                      Discuss project <span>↗</span>
+                    </a>
+                    <button
+                      type="button"
+                      className="card-gallery-jump"
+                      onClick={() => jumpToGallery(srv.key)}
+                      title={`View all ${gallery.length} ${srv.title} pictures in slider`}
+                    >
+                      View all {gallery.length} designs <span>→</span>
+                    </button>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
 
-        <section className="work" id="work">
-          <div className="work-head">
+        {/* ================================================================== */}
+        {/* DEDICATED SLIDING PHOTO SHOWCASE SECTION                           */}
+        {/* ================================================================== */}
+        <section className="gallery-section" id="gallery">
+          <div className="gallery-header">
             <div>
               <p className="eyebrow">
-                <span /> Selected work
+                <span /> Design Showcase & Gallery
               </p>
               <h2>
-                Made to perform.
+                EXPLORE REAL
                 <br />
-                <em>Built to endure.</em>
+                <em>FABRICATED DESIGNS.</em>
               </h2>
             </div>
-            <a href="#quote" onClick={() => pick("")}>
-              Start a project <span>↗</span>
-            </a>
+            <p className="sub">
+              Slide through real photographs of our custom gates, railings, sheds, and steel frameworks.
+              Select any category below to inspect our finished client installations.
+            </p>
           </div>
-          <div className="project-grid">
-            {projects.map((project, index) => (
-              <a
-                className={`project p${index + 1}`}
-                key={project.title}
-                href="#quote"
-                onClick={() => pick(project.service, project.title)}
-                aria-label={`Request work like ${project.title}`}
+
+          {/* Category Tabs */}
+          <div className="gallery-tabs" role="tablist" aria-label="Service categories">
+            <button
+              type="button"
+              className={`gallery-tab ${activeCategory === "All" ? "active" : ""}`}
+              onClick={() => switchCategory("All")}
+            >
+              All Categories <span className="count">{allGalleryPhotos.length}</span>
+            </button>
+            {Object.keys(serviceGalleries).map((catName) => (
+              <button
+                key={catName}
+                type="button"
+                className={`gallery-tab ${activeCategory === catName ? "active" : ""}`}
+                onClick={() => switchCategory(catName)}
               >
-                <img src={project.image} alt={project.title} />
-                <div className="project-label">
-                  <small>{project.type}</small>
-                  <h3>{project.title}</h3>
+                {catName} <span className="count">{serviceGalleries[catName].length}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Main Slider Display */}
+          <div
+            className="gallery-slider-frame"
+            onMouseEnter={() => setAutoPlay(false)}
+            onMouseLeave={() => setAutoPlay(true)}
+          >
+            {currentSlide && (
+              <>
+                <img
+                  key={currentSlide.id}
+                  className="gallery-slide-img"
+                  src={currentSlide.image}
+                  alt={currentSlide.title}
+                />
+                <div className="gallery-slide-overlay" />
+
+                {/* Top Status & Controls Bar */}
+                <div className="gallery-top-bar">
+                  <span className="service-badge">
+                    {currentSlide.service}
+                  </span>
+
+                  <div className="slider-status-pill">
+                    <span>
+                      {safeSlideIndex + 1} / {currentPhotos.length}
+                    </span>
+                    <button
+                      type="button"
+                      className="auto-toggle"
+                      onClick={() => setAutoPlay(!autoPlay)}
+                      title={autoPlay ? "Pause Auto-slide" : "Start Auto-slide"}
+                    >
+                      {autoPlay ? "⏸ Pause" : "▶ Play"}
+                    </button>
+                  </div>
                 </div>
-                <span className="project-go" aria-hidden="true">
-                  ↗
-                </span>
-              </a>
+
+                {/* Left & Right Chevrons */}
+                {currentPhotos.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className="slide-nav-btn slide-nav-prev"
+                      onClick={prevSlide}
+                      aria-label="Previous photo"
+                      title="Previous photo (Left arrow)"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      className="slide-nav-btn slide-nav-next"
+                      onClick={nextSlide}
+                      aria-label="Next photo"
+                      title="Next photo (Right arrow)"
+                    >
+                      ›
+                    </button>
+                  </>
+                )}
+
+                {/* Bottom Information & WhatsApp Inquiry Action */}
+                <div className="gallery-slide-info">
+                  <div className="gallery-slide-copy">
+                    <div className="gallery-slide-specs">{currentSlide.specs}</div>
+                    <h3>{currentSlide.title}</h3>
+                    <p className="gallery-slide-desc">{currentSlide.description}</p>
+                  </div>
+
+                  <a
+                    className="gallery-inquire-btn"
+                    href={`https://wa.me/919972522213?text=${encodeURIComponent(
+                      `Hello, I saw this design on your website and would like a quote:\n\nDesign: ${currentSlide.title}\nCategory: ${currentSlide.service}\nSpecifications: ${currentSlide.specs}`,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <WaIcon /> Inquire on WhatsApp <span>↗</span>
+                  </a>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Interactive Thumbnails Strip */}
+          <div className="gallery-thumbnails-strip" aria-label="Thumbnail previews">
+            {currentPhotos.map((photo, pIdx) => (
+              <button
+                key={photo.id}
+                type="button"
+                className={`gallery-thumb-btn ${pIdx === safeSlideIndex ? "active" : ""}`}
+                onClick={() => setActiveSlideIndex(pIdx)}
+                aria-label={`View ${photo.title}`}
+              >
+                <img src={photo.image} alt={photo.title} loading="lazy" />
+                <span className="gallery-thumb-title">{photo.title}</span>
+              </button>
             ))}
           </div>
         </section>
 
+        {/* ABOUT SECTION */}
         <section className="about" id="about">
           <div className="about-image video-panel">
             <video
@@ -416,6 +985,7 @@ export default function App() {
               </span>
             </a>
           </div>
+
           <div className="about-copy">
             <p className="eyebrow dark">
               <span /> The AL-REHMAN standard
@@ -438,7 +1008,12 @@ export default function App() {
                 </a>
               </li>
               <li>
-                <a href="#work">
+                <a href="#gallery">
+                  <b>✓</b> Real tested designs & custom measurements
+                </a>
+              </li>
+              <li>
+                <a href="#services">
                   <b>✓</b> Quality materials, clean finishes
                 </a>
               </li>
@@ -451,6 +1026,7 @@ export default function App() {
           </div>
         </section>
 
+        {/* QUOTE SECTION */}
         <section className="quote" id="quote">
           <div className="quote-copy">
             <p className="eyebrow">
@@ -493,6 +1069,7 @@ export default function App() {
               </div>
             </div>
           </div>
+
           <form onSubmit={submitQuote}>
             <label>
               Your name
@@ -518,8 +1095,8 @@ export default function App() {
                 <option value="" disabled>
                   Select a service
                 </option>
-                {services.map((service) => (
-                  <option key={service.title}>{service.title}</option>
+                {services.map((srv) => (
+                  <option key={srv.title}>{srv.title}</option>
                 ))}
               </select>
             </label>
@@ -564,7 +1141,7 @@ export default function App() {
         </a>
         <nav aria-label="Footer">
           <a href="#services">Services</a>
-          <a href="#work">Our work</a>
+          <a href="#gallery">Gallery</a>
           <a href="#about">About</a>
           <a href="#quote">Contact</a>
         </nav>
